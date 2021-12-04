@@ -1,0 +1,5 @@
+#Sat Dec 04 23:10:11 CET 2021
+configuration*?=F55241C5D7A43713551B6DEABE5B9C60F0EFECBA
+module-resource*?\:checkstyle-xpath-suppressions.xml=448FB25C0340AC2E9E146AD9286D7CD36CCF176
+module-resource*?\:checkstyle-suppressions.xml=9FD75527CA80A1B2B600B159B368E691BBBFAEED
+C\:\\Users\\herny\\Desktop\\final\\ticket-service\\src\\main\\java\\com\\epam\\training\\ticketservice\\Application.java=1638655764792
