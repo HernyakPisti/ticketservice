@@ -1,0 +1,8 @@
+com\epam\training\ticketservice\service\AccountServiceTest.class
+com\epam\training\ticketservice\handler\AccountCommandTest.class
+com\epam\training\ticketservice\service\RoomServiceTest.class
+com\epam\training\ticketservice\handler\MovieCommandTest.class
+com\epam\training\ticketservice\handler\RoomCommandTest.class
+com\epam\training\ticketservice\service\ScreeningServiceTest.class
+com\epam\training\ticketservice\handler\ScreeningCommandTest.class
+com\epam\training\ticketservice\service\MovieServiceTest.class

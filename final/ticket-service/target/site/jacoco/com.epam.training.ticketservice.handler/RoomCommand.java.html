@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="hu"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoomCommand.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ticket-service</a> &gt; <a href="index.source.html" class="el_package">com.epam.training.ticketservice.handler</a> &gt; <span class="el_source">RoomCommand.java</span></div><h1>RoomCommand.java</h1><pre class="source lang-java linenums">package com.epam.training.ticketservice.handler;
+
+import com.epam.training.ticketservice.model.Room;
+import com.epam.training.ticketservice.service.RoomService;
+import com.epam.training.ticketservice.service.exception.NoRoomException;
+import org.springframework.shell.Availability;
+import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+
+import java.util.List;
+
+@ShellComponent
+public class RoomCommand {
+
+    private final AccountCommand accountCommand;
+    private final RoomService roomService;
+
+<span class="fc" id="L19">    public RoomCommand(AccountCommand accountCommand, RoomService roomService) {</span>
+<span class="fc" id="L20">        this.accountCommand = accountCommand;</span>
+<span class="fc" id="L21">        this.roomService = roomService;</span>
+<span class="fc" id="L22">    }</span>
+
+    @ShellMethod(value = &quot;create room&quot;, key = {&quot;create room&quot;, &quot;cr&quot;})
+    @ShellMethodAvailability(value = &quot;checkAdmin&quot;)
+    public String createRoom(final String name, final Integer rowCount, final Integer columnCount) {
+<span class="fc" id="L27">        this.roomService.createRoom(name, rowCount, columnCount);</span>
+<span class="fc" id="L28">        return String.format(&quot;Room with name '%s' created&quot;, name);</span>
+    }
+
+    @ShellMethod(value = &quot;update room&quot;, key = &quot;update room&quot;)
+    @ShellMethodAvailability(value = &quot;checkAdmin&quot;)
+    public String updateRoom(final String name, final Integer rowCount, final Integer columnCount) {
+        try {
+<span class="fc" id="L35">            this.roomService.updateRoom(name, rowCount, columnCount);</span>
+<span class="fc" id="L36">            return String.format(&quot;Room with name '%s' updated&quot;, name);</span>
+<span class="nc" id="L37">        } catch (NoRoomException e) {</span>
+<span class="nc" id="L38">            return e.getMessage();</span>
+        }
+    }
+
+    @ShellMethod(value = &quot;delete room&quot;, key = &quot;delete room&quot;)
+    @ShellMethodAvailability(value = &quot;checkAdmin&quot;)
+    public String deleteRoom(final String name) {
+        try {
+<span class="fc" id="L46">            this.roomService.deleteRoom(name);</span>
+<span class="fc" id="L47">            return String.format(&quot;Room with name '%s' deleted&quot;, name);</span>
+<span class="nc" id="L48">        } catch (NoRoomException e) {</span>
+<span class="nc" id="L49">            return e.getMessage();</span>
+        }
+    }
+
+    @ShellMethod(value = &quot;list rooms&quot;, key = &quot;list rooms&quot;)
+    public String listRooms() {
+<span class="fc" id="L55">        List&lt;Room&gt; rooms = this.roomService.getAllRooms();</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (rooms.isEmpty()) {</span>
+<span class="fc" id="L57">            return &quot;There are no rooms at the moment&quot;;</span>
+        } else {
+<span class="nc" id="L59">            StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L60">            rooms.forEach(r -&gt; sb.append(String.format(&quot;Room &quot;</span>
+<span class="nc" id="L61">                    + r.getName() + &quot; with &quot;</span>
+<span class="nc" id="L62">                    + r.getColumnNumber() * r.getRowNumber())</span>
+<span class="nc" id="L63">                    + &quot; seats, &quot; + r.getRowNumber()</span>
+<span class="nc" id="L64">                    + &quot; rows and &quot; + r.getColumnNumber()</span>
+                    + &quot; columns\n&quot;));
+<span class="nc" id="L66">            sb.deleteCharAt(sb.length() - 1);</span>
+<span class="nc" id="L67">            return sb.toString();</span>
+        }
+    }
+
+    public Availability checkAdmin() {
+<span class="fc bfc" id="L72" title="All 2 branches covered.">        if (this.accountCommand.getLoggedInAccount().isPresent()</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">                &amp;&amp; this.accountCommand.getLoggedInAccount().get().getAdmin()) {</span>
+<span class="fc" id="L74">            return Availability.available();</span>
+        } else {
+<span class="fc" id="L76">            return Availability.unavailable(&quot;this command requires admin privileges&quot;);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

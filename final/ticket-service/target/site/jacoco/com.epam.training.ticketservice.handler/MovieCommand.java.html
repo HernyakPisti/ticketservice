@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="hu"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovieCommand.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ticket-service</a> &gt; <a href="index.source.html" class="el_package">com.epam.training.ticketservice.handler</a> &gt; <span class="el_source">MovieCommand.java</span></div><h1>MovieCommand.java</h1><pre class="source lang-java linenums">package com.epam.training.ticketservice.handler;
+
+import com.epam.training.ticketservice.model.Movie;
+import com.epam.training.ticketservice.service.MovieService;
+import com.epam.training.ticketservice.service.exception.NoMovieException;
+import org.springframework.shell.Availability;
+import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+
+import java.util.List;
+
+@ShellComponent
+public class MovieCommand {
+
+    private final AccountCommand accountCommand;
+    private final MovieService movieService;
+
+<span class="fc" id="L19">    public MovieCommand(AccountCommand accountCommand, MovieService movieService) {</span>
+<span class="fc" id="L20">        this.accountCommand = accountCommand;</span>
+<span class="fc" id="L21">        this.movieService = movieService;</span>
+<span class="fc" id="L22">    }</span>
+
+    @ShellMethod(value = &quot;create movie&quot;, key = &quot;create movie&quot;)
+    @ShellMethodAvailability(value = &quot;checkAdmin&quot;)
+    public String createMovie(final String name, final String genre, final int length) {
+<span class="nc" id="L27">        this.movieService.createMovie(name, genre, length);</span>
+<span class="nc" id="L28">        return String.format(&quot;Movie with name '%s' created&quot;,name);</span>
+    }
+
+    @ShellMethod(value = &quot;update movie&quot;, key = &quot;update movie&quot;)
+    @ShellMethodAvailability(value = &quot;checkAdmin&quot;)
+    public String updateMovie(final String name, final String genre, final int length) {
+        try {
+<span class="fc" id="L35">            this.movieService.updateMovie(name, genre, length);</span>
+<span class="fc" id="L36">            return String.format(&quot;Movie with name '%s' updated&quot;, name);</span>
+<span class="fc" id="L37">        } catch (NoMovieException e) {</span>
+<span class="fc" id="L38">            return e.getMessage();</span>
+        }
+    }
+
+    @ShellMethod(value = &quot;delete movie&quot;, key = &quot;delete movie&quot;)
+    @ShellMethodAvailability(value = &quot;checkAdmin&quot;)
+    public String deleteMovie(final String name) {
+        try {
+<span class="fc" id="L46">            this.movieService.deleteMovie(name);</span>
+<span class="fc" id="L47">            return String.format(&quot;Movie with name '%s' deleted&quot;, name);</span>
+<span class="nc" id="L48">        } catch (NoMovieException e) {</span>
+<span class="nc" id="L49">            return e.getMessage();</span>
+        }
+    }
+
+    @ShellMethod(value = &quot;list movies&quot;, key = &quot;list movies&quot;)
+    public String listMovies() {
+<span class="fc" id="L55">        List&lt;Movie&gt; movies = this.movieService.getAllMovies();</span>
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (movies.isEmpty()) {</span>
+<span class="fc" id="L57">            return &quot;There are no movies at the moment&quot;;</span>
+        } else {
+<span class="nc" id="L59">            StringBuilder sb = new StringBuilder();</span>
+<span class="nc" id="L60">            movies.forEach(m -&gt; sb.append(String.format(m.getName()</span>
+<span class="nc" id="L61">                    + &quot; (&quot; + m.getGenre() + &quot;, &quot; + m.getLength()</span>
+                    + &quot; minutes)\n&quot;)));
+<span class="nc" id="L63">            sb.deleteCharAt(sb.length() - 1);</span>
+<span class="nc" id="L64">            return sb.toString();</span>
+        }
+    }
+
+    public Availability checkAdmin() {
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (this.accountCommand.getLoggedInAccount().isPresent()</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">                &amp;&amp; this.accountCommand.getLoggedInAccount().get().getAdmin()) {</span>
+<span class="fc" id="L71">            return Availability.available();</span>
+        } else {
+<span class="fc" id="L73">            return Availability.unavailable(&quot;this command requires admin privileges&quot;);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

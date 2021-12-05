@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="hu"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RoomService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ticket-service</a> &gt; <a href="index.source.html" class="el_package">com.epam.training.ticketservice.service</a> &gt; <span class="el_source">RoomService.java</span></div><h1>RoomService.java</h1><pre class="source lang-java linenums">package com.epam.training.ticketservice.service;
+
+import com.epam.training.ticketservice.model.Room;
+import com.epam.training.ticketservice.repository.RoomRepository;
+import com.epam.training.ticketservice.service.exception.NoRoomException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class RoomService {
+
+    private final RoomRepository roomRepository;
+
+<span class="fc" id="L16">    public RoomService(RoomRepository roomRepository) {</span>
+<span class="fc" id="L17">        this.roomRepository = roomRepository;</span>
+<span class="fc" id="L18">    }</span>
+
+    public Optional&lt;Room&gt; getRoomById(String name) {
+<span class="fc" id="L21">        return this.roomRepository.findById(name);</span>
+    }
+
+    public List&lt;Room&gt; getAllRooms() {
+<span class="fc" id="L25">        return this.roomRepository.findAll();</span>
+    }
+
+    public void createRoom(Room room) {
+<span class="fc" id="L29">        this.roomRepository.save(room);</span>
+<span class="fc" id="L30">    }</span>
+
+    public void createRoom(String name, Integer rowCount, Integer columnCount) {
+<span class="nc" id="L33">        this.roomRepository.save(new Room(name, rowCount, columnCount));</span>
+<span class="nc" id="L34">    }</span>
+
+    public void updateRoom(String name, Integer rowCount, Integer columnCount) throws NoRoomException {
+<span class="fc" id="L37">        this.roomRepository.findById(name)</span>
+<span class="pc" id="L38">                .map(room -&gt; this.roomRepository.save(new Room(name, rowCount, columnCount)))</span>
+<span class="pc" id="L39">                .orElseThrow(() -&gt; new NoRoomException(&quot;There is no room with name: &quot; + name));</span>
+<span class="nc" id="L40">    }</span>
+
+    public void deleteRoom(String name) throws NoRoomException {
+<span class="fc" id="L43">        this.roomRepository.findById(name)</span>
+<span class="fc" id="L44">                .map(room -&gt; {</span>
+<span class="nc" id="L45">                    this.roomRepository.deleteById(name);</span>
+<span class="nc" id="L46">                    return room;</span>
+                })
+<span class="pc" id="L48">                .orElseThrow(() -&gt; new NoRoomException(&quot;There is no room with name: &quot; + name));</span>
+<span class="nc" id="L49">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

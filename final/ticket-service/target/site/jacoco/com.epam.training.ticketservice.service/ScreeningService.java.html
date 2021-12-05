@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="hu"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ScreeningService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ticket-service</a> &gt; <a href="index.source.html" class="el_package">com.epam.training.ticketservice.service</a> &gt; <span class="el_source">ScreeningService.java</span></div><h1>ScreeningService.java</h1><pre class="source lang-java linenums">package com.epam.training.ticketservice.service;
+
+import com.epam.training.ticketservice.model.Movie;
+import com.epam.training.ticketservice.model.Room;
+import com.epam.training.ticketservice.model.Screening;
+import com.epam.training.ticketservice.model.ScreeningId;
+import com.epam.training.ticketservice.repository.ScreeningRepository;
+import com.epam.training.ticketservice.service.exception.NoScreeningException;
+import com.epam.training.ticketservice.service.exception.OverlapException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+@Service
+public class ScreeningService {
+
+    private final int breakLength;
+    private final String dateTimePattern;
+
+    private final ScreeningRepository screeningRepository;
+    private final MovieService movieService;
+    private final RoomService roomService;
+
+    public ScreeningService( ScreeningRepository screeningRepository,
+                             MovieService movieService,
+                             RoomService roomService,
+                             @Value(&quot;${ticket-service.screening.break-length}&quot;) int breakLength,
+<span class="fc" id="L33">                             @Value(&quot;${ticket-service.date-time.pattern}&quot;) String dateTimePattern ) {</span>
+<span class="fc" id="L34">        this.screeningRepository = screeningRepository;</span>
+<span class="fc" id="L35">        this.movieService = movieService;</span>
+<span class="fc" id="L36">        this.roomService = roomService;</span>
+<span class="fc" id="L37">        this.breakLength = breakLength;</span>
+<span class="fc" id="L38">        this.dateTimePattern = dateTimePattern;</span>
+<span class="fc" id="L39">    }</span>
+
+    public Optional&lt;Screening&gt; getScreeningById( String movieName,
+                                                 String roomName,
+                                                 LocalDateTime startingAt ) {
+<span class="fc" id="L44">        return this.screeningRepository.findById(constructScreeningIdFromIds(movieName, roomName, startingAt));</span>
+    }
+
+    public Optional&lt;Screening&gt; getScreeningById(String movieName,
+                                                String roomName,
+                                                String startingAt) {
+<span class="fc" id="L50">        final LocalDateTime parsedStartingAt = this.parseDateString(startingAt);</span>
+
+<span class="fc" id="L52">        return getScreeningById(movieName, roomName, parsedStartingAt);</span>
+    }
+
+    public List&lt;Screening&gt; getAllScreenings() {
+<span class="fc" id="L56">        return this.screeningRepository.findAll();</span>
+    }
+
+    public void createScreeningFromIds(String movieName, String roomName, String startingAt)
+            throws NoScreeningException, OverlapException {
+<span class="fc" id="L61">        final LocalDateTime formattedStartingAt = this.parseDateString(startingAt);</span>
+<span class="fc" id="L62">        final Movie movie = this.movieService.getMovieById(movieName).orElseThrow(() -&gt;</span>
+<span class="fc" id="L63">                new NoScreeningException(&quot;There is no movie with name: &quot; + movieName));</span>
+
+<span class="fc" id="L65">        Room room = this.roomService.getRoomById(roomName).orElseThrow(() -&gt;</span>
+<span class="fc" id="L66">                new NoScreeningException(&quot;There is no room with name: &quot; + roomName));</span>
+
+<span class="fc bfc" id="L68" title="All 2 branches covered.">        if (isOverlappingScreening(roomName, movie.getLength(), formattedStartingAt)) {</span>
+<span class="fc" id="L69">            throw new OverlapException(&quot;There is an overlapping screening&quot;);</span>
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        } else if (isOverlappingBreak(roomName, formattedStartingAt)) {</span>
+<span class="fc" id="L71">            throw new OverlapException(</span>
+                    &quot;This would start in the break period after another screening in this room&quot;);
+        }
+
+<span class="nc" id="L75">        this.createScreening(new Screening(new ScreeningId(movie, room, formattedStartingAt)));</span>
+<span class="nc" id="L76">    }</span>
+
+    public void createScreening(Screening screening) {
+<span class="fc" id="L79">        this.screeningRepository.save(screening);</span>
+<span class="fc" id="L80">    }</span>
+
+    public void deleteScreening(ScreeningId screeningId) throws NoScreeningException {
+<span class="fc" id="L83">        this.screeningRepository.findById(screeningId)</span>
+<span class="fc" id="L84">                .map(screening -&gt; {</span>
+<span class="nc" id="L85">                    this.screeningRepository.deleteById(screeningId);</span>
+<span class="nc" id="L86">                    return screening;</span>
+                })
+<span class="pc" id="L88">                .orElseThrow(() -&gt; new NoScreeningException(</span>
+<span class="fc" id="L89">                        String.format(&quot;There is no screening with %s movie name, %s room name, starting at %s&quot;,</span>
+<span class="fc" id="L90">                                screeningId.getMovie().getName(),</span>
+<span class="fc" id="L91">                                screeningId.getRoom().getName(),</span>
+<span class="fc" id="L92">                                screeningId.getStartingAt().format(DateTimeFormatter.ofPattern(dateTimePattern)))));</span>
+<span class="nc" id="L93">    }</span>
+
+    public ScreeningId constructScreeningIdFromIds(String movieName,
+                                                   String roomName,
+                                                   LocalDateTime startingAt) {
+<span class="fc" id="L98">        final Movie movie = movieService.getMovieById(movieName).orElse(null);</span>
+<span class="fc" id="L99">        final Room room = roomService.getRoomById(roomName).orElse(null);</span>
+
+<span class="fc" id="L101">        return new ScreeningId(movie, room, startingAt);</span>
+    }
+
+    public ScreeningId constructScreeningIdFromIds(String movieName,
+                                                   String roomName,
+                                                   String startingAt) {
+<span class="fc" id="L107">        LocalDateTime formattedStartingAt = this.parseDateString(startingAt);</span>
+
+<span class="fc" id="L109">        return constructScreeningIdFromIds(movieName, roomName, formattedStartingAt);</span>
+    }
+
+    public LocalDateTime parseDateString(String dateString) {
+<span class="fc" id="L113">        return LocalDateTime.parse(dateString, DateTimeFormatter.ofPattern(dateTimePattern));</span>
+    }
+
+    public boolean isOverlappingScreening(String roomName,
+                                          Integer movieLength,
+                                          LocalDateTime startingAt) {
+<span class="fc" id="L119">        final List&lt;Screening&gt; screenings = screeningRepository.findScreeningsById_Room_Name(roomName);</span>
+<span class="fc" id="L120">        final LocalDateTime endingAt = startingAt.plusMinutes(movieLength);</span>
+
+<span class="fc" id="L122">        return screenings.stream().anyMatch(screening -&gt; {</span>
+<span class="fc" id="L123">            final int currentMovieLength = this.movieService.getMovieById(</span>
+<span class="fc" id="L124">                    screening.getId().getMovie().getName()).get().getLength();</span>
+<span class="fc" id="L125">            final LocalDateTime currentScreeningEndingAt =</span>
+<span class="fc" id="L126">                    screening.getId().getStartingAt().plusMinutes(currentMovieLength);</span>
+
+<span class="pc bpc" id="L128" title="1 of 2 branches missed.">            return (startingAt.isAfter(screening.getId().getStartingAt())</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">                    &amp;&amp; startingAt.isBefore(currentScreeningEndingAt))</span>
+                    ||
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">                    (endingAt.isAfter(screening.getId().getStartingAt())</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">                            &amp;&amp; endingAt.isBefore(currentScreeningEndingAt));</span>
+        });
+    }
+
+    public boolean isOverlappingBreak(String roomName, LocalDateTime startingAt) {
+<span class="fc" id="L137">        final List&lt;Screening&gt; screenings = screeningRepository.findScreeningsById_Room_Name(roomName);</span>
+
+<span class="fc" id="L139">        return screenings.stream().anyMatch(screening -&gt; {</span>
+<span class="fc" id="L140">            final int currentMovieLength = this.movieService.getMovieById(</span>
+<span class="fc" id="L141">                    screening.getId().getMovie().getName()).get().getLength();</span>
+<span class="fc" id="L142">            final LocalDateTime currentScreeningEndingAt =</span>
+<span class="fc" id="L143">                    screening.getId().getStartingAt().plusMinutes(currentMovieLength);</span>
+
+<span class="fc bfc" id="L145" title="All 2 branches covered.">            return startingAt.isAfter(currentScreeningEndingAt)</span>
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">                    &amp;&amp; startingAt.isBefore(currentScreeningEndingAt.plusMinutes(breakLength));</span>
+        });
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

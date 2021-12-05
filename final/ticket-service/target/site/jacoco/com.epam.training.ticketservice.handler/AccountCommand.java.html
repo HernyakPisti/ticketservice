@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="hu"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AccountCommand.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">ticket-service</a> &gt; <a href="index.source.html" class="el_package">com.epam.training.ticketservice.handler</a> &gt; <span class="el_source">AccountCommand.java</span></div><h1>AccountCommand.java</h1><pre class="source lang-java linenums">package com.epam.training.ticketservice.handler;
+
+import com.epam.training.ticketservice.model.Account;
+import com.epam.training.ticketservice.service.AccountService;
+import org.springframework.shell.Availability;
+import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellMethodAvailability;
+
+import java.util.Optional;
+
+@ShellComponent
+public class AccountCommand {
+
+    private final AccountService accountService;
+
+<span class="fc" id="L17">    private Optional&lt;Account&gt; loggedInAccount = Optional.empty();</span>
+
+<span class="fc" id="L19">    public AccountCommand(AccountService accountService) {</span>
+<span class="fc" id="L20">        this.accountService = accountService;</span>
+<span class="fc" id="L21">    }</span>
+
+    public Optional&lt;Account&gt; getLoggedInAccount() {
+<span class="nc" id="L24">        return loggedInAccount;</span>
+    }
+
+    @ShellMethod(value = &quot;sign in privileged&quot;, key = &quot;sign in privileged&quot;)
+    public String signInPrivileged(final String username, final String password) {
+<span class="pc bpc" id="L29" title="1 of 4 branches missed.">        if (&quot;admin&quot;.equals(username) &amp;&amp; &quot;admin&quot;.equals(password)) {</span>
+<span class="fc" id="L30">            this.loggedInAccount = Optional.of(new Account(&quot;admin&quot;, &quot;admin&quot;, true));</span>
+<span class="fc" id="L31">            return &quot;Signed in&quot;;</span>
+        } else {
+<span class="fc" id="L33">            return &quot;Login failed due to incorrect credentials&quot;;</span>
+        }
+    }
+
+    @ShellMethod(value = &quot;sign out&quot;, key = &quot;sign out&quot;)
+    @ShellMethodAvailability(value = &quot;checkLogged&quot;)
+    public String signOut() {
+<span class="fc" id="L40">        this.loggedInAccount = Optional.empty();</span>
+<span class="fc" id="L41">        return &quot;Signed out&quot;;</span>
+    }
+
+    @ShellMethod(value = &quot;describe account&quot;, key = &quot;describe account&quot;)
+
+    public String describeAccount() {
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        if (check()) {</span>
+<span class="nc" id="L48">            return String.format(&quot;Signed in with privileged account '%s'&quot;, loggedInAccount.orElseThrow().getUsername());</span>
+        } else {
+<span class="nc" id="L50">            return &quot;You are not signed in&quot;;</span>
+        }
+
+    }
+
+    public boolean check() {
+<span class="pc bpc" id="L56" title="1 of 2 branches missed.">        if (!this.loggedInAccount.isEmpty()) {</span>
+<span class="nc" id="L57">            return true;</span>
+        } else {
+<span class="fc" id="L59">            return false;</span>
+        }
+    }
+
+    public Availability checkLogged() {
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        if (!this.loggedInAccount.isEmpty()) {</span>
+<span class="nc" id="L65">            return Availability.available();</span>
+        } else {
+<span class="nc" id="L67">            return Availability.unavailable(&quot;you are not signed in&quot;);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

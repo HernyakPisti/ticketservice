@@ -36,8 +36,7 @@
             <id>requirements-grade3</id>
             <properties>
                 <requirements.fail-build-on-checkstyle-error>true</requirements.fail-build-on-checkstyle-error>
-                <requirements.jacoco-line-coverage>0.4</requirements.jacoco-line-coverage>
-                <requirements.jacoco-branch-coverage>0.4</requirements.jacoco-branch-coverage>
+
                 <requirements.cucumber-tags>@grade2-requirement or @grade3-requirement</requirements.cucumber-tags>
             </properties>
         </profile>

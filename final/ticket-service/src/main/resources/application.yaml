@@ -1,0 +1,5 @@
+ticket-service:
+  screening:
+    break-length: 10
+  date-time:
+    pattern: yyyy-MM-dd HH:mm
